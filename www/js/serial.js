@@ -1,6 +1,9 @@
 'use strict';
 
 var serial = {
+    serviceId: 'FFE0',          // Modify to suit your ble module
+    characteristicId: 'FFE1',   // Modify to suit your ble module
+
     connectionId:    false,
     openRequested:   false,
     openCanceled:    false,
@@ -19,6 +22,9 @@ var serial = {
     scanning: false,
     scanListeners: [],
 
+    isConnecting: false,
+    isDisconnecting: false,
+
     logHead: 'SERIAL: ',
 
     connect: function (path, options, callback) {
@@ -31,6 +37,8 @@ var serial = {
         }
     },
     connectSerial: function (path, options, callback) {
+        if (this.isConnecting || this.connectionId) return;
+
         var self = this;
         self.openRequested = true;
 
@@ -38,8 +46,11 @@ var serial = {
         var deviceId = self.deviceIds[deviceIdx] || '';
 
         this._stopScanning(function() {
+           self.isConnecting = true;
+           
            ble.connect(deviceId,
                 function success(connectionInfo) {
+                    self.isConnecting = false;
                     self.connectionId = connectionInfo.id;
                     self.bitrate = 9600;
                     self.bytesReceived = 0;
@@ -56,7 +67,8 @@ var serial = {
                     });
 
                     ble.startNotification(self.connectionId, 
-                        'FFE0', 'FFE1',
+                        self.serviceId,
+                        self.characteristicId,
                         self.onReceive._onData.bind(self.onReceive),
                         self.onReceiveError._onError.bind(self.onReceiveError)
                     );
@@ -68,12 +80,16 @@ var serial = {
                 function failure() {
                     console.log('SERIAL: Failed to open serial port');
                     self.openRequested = false;
+                    self.isConnecting = false;
+
                     if (callback) callback(false);
                 }
             );
         });
     },
     disconnect: function (callback) {
+        if (this.isDisconnecting || this.isConnecting) return;
+
         var self = this;
 
         if (self.connectionId) {            
@@ -83,23 +99,34 @@ var serial = {
             self.onReceive.listeners = [];
             self.onReceiveError.listeners = [];
 
-            ble.disconnect(self.connectionId,
-                function success() {
-                    console.log(self.logHead + 'Connection with ID: ' + self.connectionId + ' closed, Sent: ' + self.bytesSent + ' bytes, Received: ' + self.bytesReceived + ' bytes');
+            self.isDisconnecting = true;
 
-                    self.connectionId = false;
-                    self.bitrate = 0;
+            function success() {
+                console.log(self.logHead + 'Connection with ID: ' + self.connectionId + ' closed, Sent: ' + self.bytesSent + ' bytes, Received: ' + self.bytesReceived + ' bytes');
 
-                    if (callback) callback(true);
+                self.isDisconnecting = false;
+                self.connectionId = false;
+                self.bitrate = 0;
+
+                if (callback) callback(true);
+            }
+
+            function failure() {
+                console.log(self.logHead + 'Failed to close connection with ID: ' + self.connectionId + ' closed, Sent: ' + self.bytesSent + ' bytes, Received: ' + self.bytesReceived + ' bytes');
+
+                self.isDisconnecting = false;
+                
+                if (callback) callback(false);
+            }
+
+            ble.stopNotification(
+                self.connectionId, 
+                self.serviceId,
+                self.characteristicId,
+                function() {
+                    ble.disconnect(self.connectionId, success, failure);
                 },
-                function failure() {
-                    console.log(self.logHead + 'Failed to close connection with ID: ' + self.connectionId + ' closed, Sent: ' + self.bytesSent + ' bytes, Received: ' + self.bytesReceived + ' bytes');
-
-                    self.connectionId = false;
-                    self.bitrate = 0;
-                    
-                    if (callback) callback(false);
-                }
+                failure
             );
         } else {
             // connection wasn't opened, so we won't try to close anything
@@ -116,7 +143,7 @@ var serial = {
         }
 
         // Avoid new scans while connected to a device
-        if (this.connectionId) {
+        if (this.isConnecting || this.isDisconnecting || this.connectionId) {
             callback(this.deviceNames);
             return;
         }
@@ -128,7 +155,8 @@ var serial = {
         var deviceNames = [];
         var deviceIds = [];
 
-        ble.startScan(['FFE0'], 
+        ble.startScan(
+            [self.serviceId], 
             function success (device) {
                 deviceNames.push(device.name);
                 deviceIds.push(device.id);
@@ -156,7 +184,11 @@ var serial = {
             var data = self.outputBuffer[0].data,
                 callback = self.outputBuffer[0].callback;
 
-            ble.writeWithoutResponse(self.connectionId, "FFE0", "FFE1", data,
+            ble.writeWithoutResponse(
+                self.connectionId,
+                self.serviceId,
+                self.characteristicId,
+                data,
                 function success() {
                     // track sent bytes for statistics
                     self.bytesSent += data.length;
