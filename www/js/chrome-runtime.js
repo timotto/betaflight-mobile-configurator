@@ -4,7 +4,7 @@
 
 		var self = this;
 
-		$.getJSON('./manifest.json', function (data) {
+		$.getJSON('./betaflight-configurator/manifest.json', function (data) {
 			self.manifest = data;
 		});
 	};

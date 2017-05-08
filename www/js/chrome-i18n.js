@@ -7,7 +7,7 @@
 		var self = this;
 
 		this.languages.forEach(function(language) {
-			$.getJSON('./_locales/' + language + '/messages.json', function (data) {
+			$.getJSON('./betaflight-configurator/_locales/' + language + '/messages.json', function (data) {
 				self.locales[language] = data;
 			});
 		});
