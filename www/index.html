@@ -121,13 +121,6 @@
 
             // Use synchronous loading for ajax-requests to make loading-order predictable
             jQuery.ajaxSetup({ async: false });
-
-            // Re-write absolute urls starting with '/' to './' to respect the current base
-            jQuery.ajaxPrefilter(function( options, originalOptions, jqXHR ) {
-                if (options.url.indexOf('/') === 0) {
-                    options.url = '.' + options.url;
-                }
-            });
         </script>
 
         <!-- Custom mods of original scripts -->
