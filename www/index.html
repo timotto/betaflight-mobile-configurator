@@ -65,6 +65,7 @@
         <link rel="stylesheet" type="text/css" href="./betaflight-configurator/js/libraries/jbox/jBox.css"/>
 
         <!-- Modified styles -->
+        <link type="text/css" rel="stylesheet" href="./css/general.css" media="all"/>
         <link type="text/css" rel="stylesheet" href="./css/overrides/osd.css" media="all"/>
 
         <!-- Original libraries -->
@@ -86,6 +87,16 @@
 
         <!-- Custom libraries -->
         <script src = "./js/vendor/fastclick.min.js"></script>
+
+        <script type="text/javascript">
+            // Setup options for the ios-drag-drop library *before* loading it
+            var iosDragDropShim = {
+                enableEnterLeave: true,
+                holdToDrag: 300,
+                requireExplicitDraggable: true
+            };
+        </script>
+        <script src = "./js/vendor/ios-drag-drop.js"></script>
 
         <!-- Proxies for native Chrome extensions -->
         <script type="text/javascript" src="./js/chrome-storage.js"></script>
