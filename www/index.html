@@ -64,6 +64,9 @@
         <link type="text/css" rel="stylesheet" href="./betaflight-configurator/js/libraries/switchery/switchery.css" media="all"/>
         <link rel="stylesheet" type="text/css" href="./betaflight-configurator/js/libraries/jbox/jBox.css"/>
 
+        <!-- Modified styles -->
+        <link type="text/css" rel="stylesheet" href="./css/overrides/osd.css" media="all"/>
+
         <!-- Original libraries -->
         <script type="text/javascript" src="./betaflight-configurator/js/libraries/q.js"></script>
         <script type="text/javascript" src="./betaflight-configurator/js/libraries/jquery-2.1.4.min.js"></script>
@@ -81,20 +84,38 @@
         <script type="text/javascript" src="./betaflight-configurator/js/libraries/jquery.ba-throttle-debounce.min.js"></script>
         <script type="text/javascript" src="./betaflight-configurator/js/libraries/inflection.min.js"></script>
 
+        <!-- Custom libraries -->
+        <script src = "./js/vendor/fastclick.min.js"></script>
+
         <!-- Proxies for native Chrome extensions -->
         <script type="text/javascript" src="./js/chrome-storage.js"></script>
         <script type="text/javascript" src="./js/chrome-i18n.js"></script>
         <script type="text/javascript" src="./js/chrome-runtime.js"></script>
         <script type="text/javascript" src="./js/chrome-usb.js"></script>
 
-        <!-- Prevent async loading because it seems to cause problems, and delay document.ready until cordova is ready -->
+        <!-- Custom setup -->
         <script type="text/javascript">
+            // Delay jQuery(document).ready() until Phonegap has been initialized
             jQuery.holdReady(true);
-            jQuery.ajaxSetup({ async: false });
 
             document.addEventListener("deviceready", function(){
+                // Remove 300ms click-delay for mobile devices
+                var attachFastClick = Origami.fastclick;
+                attachFastClick(document.body);
+
+                // Finally, change base to make relative url's work and trigger jQuery(document).ready()
                 jQuery('base').attr('href', './betaflight-configurator/');
                 jQuery.holdReady(false);
+            });
+
+            // Use synchronous loading for ajax-requests to make loading-order predictable
+            jQuery.ajaxSetup({ async: false });
+
+            // Re-write absolute urls starting with '/' to './' to respect the current base
+            jQuery.ajaxPrefilter(function( options, originalOptions, jqXHR ) {
+                if (options.url.indexOf('/') === 0) {
+                    options.url = '.' + options.url;
+                }
             });
         </script>
 
@@ -285,7 +306,7 @@
                         <li class="tab_gps"><a href="#" i18n="tabGPS" class="tabicon ic_gps" title="GPS"></a></li>
                         <li class="tab_motors"><a href="#" i18n="tabMotorTesting" class="tabicon ic_motor" title="Motors"></a>
                         </li>
-                        <!--li class="tab_osd"><a href="#" i18n="tabOsd" class="tabicon ic_osd" title="Osd"></a></li-->
+                        <li class="tab_osd"><a href="#" i18n="tabOsd" class="tabicon ic_osd" title="Osd"></a></li>
                         <li class="tab_transponder"><a href="#" i18n="tabTransponder" class="tabicon ic_transponder"
                                                        title="Transponder"></a></li>
                         <li class="tab_led_strip"><a href="#" i18n="tabLedStrip" class="tabicon ic_led" title="LED Strip"></a>
