@@ -1,3 +1,3 @@
-[submodule "betaflight-configurator"]
-	path = www/betaflight-configurator
-	url = https://github.com/betaflight/betaflight-configurator.git
+[submodule "www/mistale-betaflight-configurator"]
+	path = www/mistale-betaflight-configurator
+	url = ../betaflight-configurator.git

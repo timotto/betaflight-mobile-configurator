@@ -2,7 +2,7 @@
 * Modify url of background-image to match the base of the app
 */
 .tab-osd .preview {
-  background: url(../../betaflight-configurator/images/osd-bg-1.jpg);
+  background: url(../../mistale-betaflight-configurator/images/osd-bg-1.jpg);
   background-size: cover;
   border-bottom-left-radius: 3px;
   border-bottom-right-radius: 3px;
