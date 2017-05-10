@@ -20,10 +20,15 @@
 		}
 
 		propNames.forEach(function(propName) {
-			var val = localStorage.getItem(propName);
+			var val = sessionStorage.getItem(propName);
 
-			if (val !== undefined && val !== null)
-				result[propName] = val;
+			if (val !== undefined && val !== null) {
+				try {
+					result[propName] = JSON.parse(val);
+				} catch (e) {
+					result[propName] = val;
+				}
+			}
 		});
 
 		callback(result);
@@ -35,7 +40,15 @@
 		var propNames = Object.getOwnPropertyNames(obj);
 
 		propNames.forEach(function(propName) {
-			localStorage.setItem(propName, obj[propName]);
+			var val;
+
+			try {
+				val = JSON.stringify(obj[propName]);
+			} catch (e) {
+				val = obj[propName];
+			}
+
+			sessionStorage.setItem(propName, val);
 		});
 
 		if (callback)
